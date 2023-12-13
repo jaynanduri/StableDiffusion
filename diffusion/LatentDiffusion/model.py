@@ -4,8 +4,8 @@ import torch
 from . import config
 from tqdm import tqdm
 from diffusers import AutoencoderKL, UNet2DConditionModel, LMSDiscreteScheduler
+from PIL import Image
 import base64
-import torchvision.transforms as T
 from io import BytesIO
 from transformers import CLIPTextModel, CLIPTokenizer
 
@@ -30,9 +30,11 @@ class StableDiffusion:
         scale_latent = latent * (1 / 0.19)
         with torch.no_grad():
             decoded_img = self.vae.decode(scale_latent).sample
-        transform = T.ToPILImage()
-        img = transform(decoded_img[0])
-        return img
+        decoded_img = (decoded_img / 2 + 0.5).clamp(0, 1)
+        decoded_img = decoded_img.permute(0, 2, 3, 1).numpy()
+        images = (decoded_img * 255).round().astype("uint8")
+        pil_image = [Image.fromarray(img, mode="RGB") for img in images]
+        return pil_image[0]
 
     def encode_text(self, text, max_length=None):
         """
@@ -78,7 +80,7 @@ class StableDiffusion:
         init_latent = torch.randn([1, self.unet.in_channels, resolution // 8, resolution // 8])
         self.scheduler.set_timesteps(time_steps)
         # Step1 - Adding noise to latents
-        initialise_latent = init_latent.to(config.DEVICE).half() * self.scheduler.init_noise_sigma
+        init_latent = init_latent.to(config.DEVICE).half() * self.scheduler.init_noise_sigma
         # Iterative process of diffusion, learning the noise of the latents and removing the noise from them.
         for idx, time_step in enumerate(tqdm(self.scheduler.timesteps)):
             # converting input latents to match the variance of the model

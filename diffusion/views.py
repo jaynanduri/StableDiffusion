@@ -20,6 +20,6 @@ def post_generated_image(request):
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        return JsonResponse({"image": img_str})
+        return JsonResponse({"image": "data:image/png;base64,"+img_str})
     else:
         return JsonResponse({"error": "This api only handles post requests"})
