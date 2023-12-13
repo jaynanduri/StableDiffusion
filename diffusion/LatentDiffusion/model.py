@@ -1,7 +1,7 @@
 import os
 
 import torch
-from . import config
+import config
 from tqdm import tqdm
 from diffusers import AutoencoderKL, UNet2DConditionModel, LMSDiscreteScheduler
 from PIL import Image
@@ -102,8 +102,9 @@ class StableDiffusion:
 
 if __name__ == "__main__":
     diffuser = StableDiffusion()
-    image = diffuser.generate("tom drinking milk")
-    buffered = BytesIO()
-    image.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue())
-    print(img_str)
+    image = diffuser.generate("pikachu eating cheese")
+    image.save("pikachu.jpg")
+    # buffered = BytesIO()
+    # image.save(buffered, format="JPEG")
+    # img_str = base64.b64encode(buffered.getvalue())
+    # print(img_str)
